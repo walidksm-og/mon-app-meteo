@@ -1,188 +1,123 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import WeatherApp from './WeatherApp.jsx'
+
+const projects = [
+  {
+    id: 'ambre',
+    icon: '☕',
+    title: 'AMBRE',
+    tagline: 'Café-Restaurant — site vitrine immersif',
+    description:
+      'Site single-page haut de gamme avec storytelling piloté par le scroll : tasse 3D interactive, transition "splash" au ralenti, menu filtrable par catégorie.',
+    tags: ['React', 'Tailwind CSS', 'Framer Motion'],
+    gradient: 'linear-gradient(135deg, #f59e0b, #78350f)',
+    href: 'https://ambre-cafe-site.vercel.app',
+    cta: 'Voir le site',
+  },
+  {
+    id: 'roadtorich',
+    icon: '💎',
+    title: 'RoadToRich',
+    tagline: 'Suivi financier gamifié',
+    description:
+      'Tableau de bord gamifié pour piloter un parcours vers l’indépendance financière : phases, XP, badges, journal de progression.',
+    tags: ['React', 'Tailwind'],
+    gradient: 'linear-gradient(135deg, #f59e0b, #b45309)',
+    href: 'https://roadtorich.vercel.app',
+    cta: 'Voir le site',
+  },
+  {
+    id: 'meteo',
+    icon: '⛅',
+    title: 'Météo Core',
+    tagline: 'App météo en temps réel',
+    description:
+      'Recherche météo par ville avec rendu dynamique selon les conditions : icônes, dégradés, humidité, vent, ressenti.',
+    tags: ['React', 'OpenWeatherMap API'],
+    gradient: 'linear-gradient(135deg, #38bdf8, #312e81)',
+    internal: true,
+    cta: 'Essayer en direct',
+  },
+]
 
 function App() {
-  const [city, setCity] = useState('')
-  const [weather, setWeather] = useState(null)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [view, setView] = useState('home')
+  const [hovered, setHovered] = useState(null)
 
-  const apiKey = 'f167491458fe305bdeb6673c174a6ddf'
-
-  const quickCities = ['Aix-en-Provence', 'Paris', 'Monaco', 'Tokyo', 'New York']
-
-  const fetchWeather = async (cityName) => {
-    if (!cityName) return
-    setLoading(true)
-    setError('')
-
-    try {
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${apiKey}&lang=fr`
-      )
-
-      if (!response.ok) {
-        throw new Error('Ville introuvable ou problème de connexion')
-      }
-
-      const data = await response.json()
-      setWeather(data)
-    } catch (err) {
-      setWeather(null)
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+  if (view === 'meteo') {
+    return <WeatherApp onBack={() => setView('home')} />
   }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    fetchWeather(city)
-  }
-
-  // Choix d'une icône / couleur en fonction du code météo
-  const getWeatherVisual = (code) => {
-    if (!code) return { icon: '🌍', gradient: 'linear-gradient(135deg, #38bdf8, #818cf8)' }
-    if (code >= 200 && code < 300) return { icon: '⛈️', gradient: 'linear-gradient(135deg, #6366f1, #312e81)' }
-    if (code >= 300 && code < 600) return { icon: '🌧️', gradient: 'linear-gradient(135deg, #38bdf8, #1e40af)' }
-    if (code >= 600 && code < 700) return { icon: '❄️', gradient: 'linear-gradient(135deg, #a5f3fc, #38bdf8)' }
-    if (code >= 700 && code < 800) return { icon: '🌫️', gradient: 'linear-gradient(135deg, #94a3b8, #475569)' }
-    if (code === 800) return { icon: '☀️', gradient: 'linear-gradient(135deg, #fbbf24, #f97316)' }
-    if (code > 800) return { icon: '⛅', gradient: 'linear-gradient(135deg, #818cf8, #38bdf8)' }
-    return { icon: '🌍', gradient: 'linear-gradient(135deg, #38bdf8, #818cf8)' }
-  }
-
-  const visual = weather ? getWeatherVisual(weather.weather[0].id) : getWeatherVisual(null)
 
   return (
     <div style={styles.page}>
-      {/* Orbes lumineuses animées en fond */}
-      <div style={{ ...styles.orb, top: '-10%', left: '-10%', background: '#38bdf8', animationDelay: '0s' }} />
-      <div style={{ ...styles.orb, bottom: '-15%', right: '-10%', background: '#818cf8', animationDelay: '2s' }} />
-      <div style={{ ...styles.orb, top: '40%', right: '20%', background: '#f472b6', width: '250px', height: '250px', animationDelay: '4s' }} />
+      <div style={{ ...styles.orb, top: '-10%', left: '-10%', background: '#38bdf8' }} />
+      <div style={{ ...styles.orb, bottom: '-15%', right: '-10%', background: '#818cf8' }} />
+      <div style={{ ...styles.orb, top: '45%', right: '15%', background: '#f472b6', width: '260px', height: '260px' }} />
 
-      <div style={styles.card}>
-        <div style={styles.headerRow}>
-          <div style={{ ...styles.pulseDot, background: loading ? '#fbbf24' : '#34d399' }} />
-          <h2 style={styles.title}>METEO CORE</h2>
-        </div>
-        <p style={styles.subtitle}>Système d'analyse climatique en temps réel</p>
-
-        <div style={styles.quickRow}>
-          {quickCities.map((item) => (
-            <button
-              key={item}
-              onClick={() => { setCity(item); fetchWeather(item) }}
-              style={{
-                ...styles.quickBtn,
-                ...(city === item ? styles.quickBtnActive : {})
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(56, 189, 248, 0.2)'
-                e.currentTarget.style.borderColor = '#38bdf8'
-                e.currentTarget.style.transform = 'translateY(-2px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = city === item ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.08)'
-                e.currentTarget.style.borderColor = city === item ? '#38bdf8' : 'rgba(255, 255, 255, 0.1)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
+      <main style={styles.container}>
+        <header style={styles.header}>
+          <p style={styles.eyebrow}>PORTFOLIO</p>
+          <h1 style={styles.name}>Walid Kasmi</h1>
+          <p style={styles.role}>Développeur Web — interfaces React rapides et soignées</p>
+          <p style={styles.bio}>
+            Je conçois et code des sites et applications web, du prototype à la mise en ligne :
+            animations, interactivité, et attention aux détails.
+          </p>
+          <div style={styles.contactRow}>
+            <a
+              href="mailto:walidkasmi125@gmail.com"
+              style={styles.contactBtn}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#38bdf8' }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
             >
-              {item}
-            </button>
-          ))}
-        </div>
-
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            type="text"
-            placeholder="Rechercher une autre ville..."
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            style={styles.input}
-            onFocus={(e) => {
-              e.target.style.borderColor = '#818cf8'
-              e.target.style.boxShadow = '0 0 0 3px rgba(129, 140, 248, 0.2)'
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'
-              e.target.style.boxShadow = 'none'
-            }}
-          />
-          <button type="submit" style={styles.submitBtn} disabled={loading}>
-            {loading ? (
-              <span style={styles.spinner} />
-            ) : (
-              '🔍'
-            )}
-          </button>
-        </form>
-
-        {error && (
-          <div style={styles.errorBox}>
-            🚨 {error}
+              ✉️ walidkasmi125@gmail.com
+            </a>
           </div>
-        )}
+        </header>
 
-        {weather && !error && (
-          <div key={weather.name} style={styles.resultBox}>
-            <h3 style={styles.cityName}>
-              {weather.name} <span style={styles.countryTag}>{weather.sys.country}</span>
-            </h3>
-
-            <div style={{
-              ...styles.iconCircle,
-              background: visual.gradient,
-            }}>
-              <span style={styles.weatherIcon}>{visual.icon}</span>
-            </div>
-
-            <div style={styles.temp}>
-              {Math.round(weather.main.temp)}°
-            </div>
-
-            <p style={styles.description}>
-              ✨ {weather.weather[0].description}
-            </p>
-
-            <div style={styles.statsRow}>
-              <div style={styles.statItem}>
-                <span style={styles.statLabel}>Humidité</span>
-                <span style={styles.statValue}>{weather.main.humidity}%</span>
-              </div>
-              <div style={styles.divider} />
-              <div style={styles.statItem}>
-                <span style={styles.statLabel}>Vent</span>
-                <span style={styles.statValue}>{Math.round(weather.wind.speed * 3.6)} km/h</span>
-              </div>
-              <div style={styles.divider} />
-              <div style={styles.statItem}>
-                <span style={styles.statLabel}>Ressenti</span>
-                <span style={styles.statValue}>{Math.round(weather.main.feels_like)}°</span>
-              </div>
-            </div>
+        <section>
+          <h2 style={styles.sectionTitle}>Mes projets</h2>
+          <div style={styles.grid}>
+            {projects.map((p) => (
+              <article
+                key={p.id}
+                style={{
+                  ...styles.card,
+                  transform: hovered === p.id ? 'translateY(-4px)' : 'translateY(0)',
+                  borderColor: hovered === p.id ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                }}
+                onMouseEnter={() => setHovered(p.id)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div style={{ ...styles.iconCircle, background: p.gradient }}>
+                  <span style={{ fontSize: '1.8rem' }}>{p.icon}</span>
+                </div>
+                <h3 style={styles.cardTitle}>{p.title}</h3>
+                <p style={styles.cardTagline}>{p.tagline}</p>
+                <p style={styles.cardDescription}>{p.description}</p>
+                <div style={styles.tagRow}>
+                  {p.tags.map((tag) => (
+                    <span key={tag} style={styles.tagChip}>{tag}</span>
+                  ))}
+                </div>
+                {p.internal ? (
+                  <button onClick={() => setView('meteo')} style={styles.cardCta}>
+                    {p.cta} →
+                  </button>
+                ) : (
+                  <a href={p.href} target="_blank" rel="noopener noreferrer" style={styles.cardCta}>
+                    {p.cta} →
+                  </a>
+                )}
+              </article>
+            ))}
           </div>
-        )}
-      </div>
+        </section>
 
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -30px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.95); }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6); }
-          50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        input::placeholder { color: #64748b; }
-      `}</style>
+        <footer style={styles.footer}>
+          <p>© {new Date().getFullYear()} Walid Kasmi — fait avec React &amp; Vite</p>
+        </footer>
+      </main>
     </div>
   )
 }
@@ -190,209 +125,160 @@ function App() {
 const styles = {
   page: {
     minHeight: '100vh',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     background: 'radial-gradient(circle at 20% 20%, #1e1b4b 0%, #0f172a 50%, #020617 100%)',
     color: '#fff',
     fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    padding: '20px',
-    boxSizing: 'border-box',
     position: 'relative',
-    overflow: 'hidden'
+    overflowX: 'hidden',
   },
   orb: {
-    position: 'absolute',
+    position: 'fixed',
     width: '350px',
     height: '350px',
     borderRadius: '50%',
     filter: 'blur(90px)',
-    opacity: 0.35,
-    animation: 'float 12s ease-in-out infinite'
+    opacity: 0.3,
+    pointerEvents: 'none',
+    zIndex: 0,
   },
-  card: {
-    width: '100%',
-    maxWidth: '480px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    borderRadius: '24px',
-    padding: '35px',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    textAlign: 'center',
+  container: {
     position: 'relative',
-    zIndex: 1
+    zIndex: 1,
+    maxWidth: '960px',
+    margin: '0 auto',
+    padding: '80px 24px 40px',
   },
-  headerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    marginBottom: '10px'
+  header: {
+    textAlign: 'center',
+    marginBottom: '64px',
   },
-  pulseDot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    animation: 'pulse 2s infinite'
+  eyebrow: {
+    color: '#38bdf8',
+    letterSpacing: '3px',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    marginBottom: '12px',
   },
-  title: {
-    margin: 0,
-    fontWeight: '700',
-    letterSpacing: '2px',
+  name: {
+    margin: '0 0 8px',
+    fontSize: 'clamp(2.4rem, 6vw, 3.5rem)',
+    fontWeight: 800,
     background: 'linear-gradient(90deg, #38bdf8, #818cf8, #f472b6)',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
-    fontSize: '1.6rem'
   },
-  subtitle: {
+  role: {
+    color: '#cbd5e1',
+    fontSize: '1.15rem',
+    margin: '0 0 16px',
+    fontWeight: 500,
+  },
+  bio: {
     color: '#94a3b8',
-    fontSize: '0.9rem',
-    margin: '0 0 25px 0'
+    fontSize: '1rem',
+    maxWidth: '520px',
+    margin: '0 auto 28px',
+    lineHeight: 1.6,
   },
-  quickRow: {
+  contactRow: {
     display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap',
     justifyContent: 'center',
-    marginBottom: '25px'
   },
-  quickBtn: {
-    background: 'rgba(255, 255, 255, 0.08)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+  contactBtn: {
     color: '#e2e8f0',
-    padding: '6px 14px',
-    borderRadius: '20px',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-    transition: 'all 0.25s ease'
+    textDecoration: 'none',
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.15)',
+    borderRadius: '999px',
+    padding: '10px 20px',
+    fontSize: '0.9rem',
+    transition: 'border-color 0.2s ease',
   },
-  quickBtnActive: {
-    background: 'rgba(56, 189, 248, 0.2)',
-    borderColor: '#38bdf8'
-  },
-  form: {
-    display: 'flex',
-    gap: '10px',
-    marginBottom: '25px'
-  },
-  input: {
-    flex: 1,
-    padding: '14px 20px',
-    borderRadius: '14px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    background: 'rgba(0, 0, 0, 0.25)',
-    color: '#fff',
-    fontSize: '1rem',
-    outline: 'none',
-    transition: 'all 0.25s ease'
-  },
-  submitBtn: {
-    width: '54px',
-    padding: '14px',
-    borderRadius: '14px',
-    border: 'none',
-    background: 'linear-gradient(90deg, #38bdf8, #818cf8)',
-    color: '#fff',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '1.1rem',
-    boxShadow: '0 4px 16px rgba(56, 189, 248, 0.4)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  spinner: {
-    width: '16px',
-    height: '16px',
-    border: '2px solid rgba(255,255,255,0.4)',
-    borderTopColor: '#fff',
-    borderRadius: '50%',
-    display: 'inline-block',
-    animation: 'spin 0.7s linear infinite'
-  },
-  errorBox: {
-    color: '#f87171',
-    background: 'rgba(248, 113, 113, 0.1)',
-    border: '1px solid rgba(248, 113, 113, 0.3)',
-    padding: '12px',
-    borderRadius: '12px',
-    fontSize: '0.9rem'
-  },
-  resultBox: {
-    marginTop: '10px',
-    animation: 'fadeInUp 0.5s ease-out'
-  },
-  cityName: {
-    margin: '0 0 15px 0',
+  sectionTitle: {
+    textAlign: 'center',
     fontSize: '1.6rem',
-    fontWeight: '600'
+    fontWeight: 700,
+    margin: '0 0 32px',
+    color: '#f1f5f9',
   },
-  countryTag: {
-    fontSize: '1rem',
-    color: '#38bdf8',
-    fontWeight: '400'
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))',
+    gap: '24px',
   },
-  iconCircle: {
-    width: '90px',
-    height: '90px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 10px auto',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
-  },
-  weatherIcon: {
-    fontSize: '2.8rem'
-  },
-  temp: {
-    fontSize: '4.5rem',
-    fontWeight: '800',
-    margin: '5px 0',
-    background: 'linear-gradient(180deg, #fff 0%, #cbd5e1 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    letterSpacing: '-2px'
-  },
-  description: {
-    textTransform: 'uppercase',
-    color: '#38bdf8',
-    fontWeight: '600',
-    letterSpacing: '2px',
-    fontSize: '0.85rem',
-    margin: '0 0 30px 0'
-  },
-  statsRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    background: 'rgba(255, 255, 255, 0.03)',
-    padding: '15px 20px',
-    borderRadius: '16px',
-    border: '1px solid rgba(255, 255, 255, 0.05)'
-  },
-  statItem: {
+  card: {
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '24px',
+    padding: '28px',
     display: 'flex',
     flexDirection: 'column',
-    flex: 1
+    alignItems: 'flex-start',
+    textAlign: 'left',
+    transition: 'transform 0.25s ease, border-color 0.25s ease',
   },
-  statLabel: {
+  iconCircle: {
+    width: '56px',
+    height: '56px',
+    borderRadius: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '18px',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+  },
+  cardTitle: {
+    margin: '0 0 4px',
+    fontSize: '1.3rem',
+    fontWeight: 700,
+  },
+  cardTagline: {
+    margin: '0 0 12px',
+    color: '#38bdf8',
+    fontSize: '0.85rem',
+    fontWeight: 600,
+  },
+  cardDescription: {
+    margin: '0 0 18px',
+    color: '#94a3b8',
+    fontSize: '0.92rem',
+    lineHeight: 1.6,
+  },
+  tagRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginBottom: '22px',
+  },
+  tagChip: {
+    fontSize: '0.72rem',
+    color: '#cbd5e1',
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '999px',
+    padding: '4px 10px',
+  },
+  cardCta: {
+    marginTop: 'auto',
+    color: '#0f172a',
+    background: 'linear-gradient(90deg, #38bdf8, #818cf8)',
+    textDecoration: 'none',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '10px 18px',
+    fontSize: '0.9rem',
+    fontWeight: 700,
+    cursor: 'pointer',
+    alignSelf: 'flex-start',
+  },
+  footer: {
+    textAlign: 'center',
+    marginTop: '72px',
     color: '#64748b',
-    fontSize: '0.7rem',
-    textTransform: 'uppercase',
-    marginBottom: '4px'
+    fontSize: '0.85rem',
   },
-  statValue: {
-    fontWeight: '600',
-    fontSize: '1.1rem'
-  },
-  divider: {
-    width: '1px',
-    height: '30px',
-    background: 'rgba(255, 255, 255, 0.1)'
-  }
 }
 
 export default App

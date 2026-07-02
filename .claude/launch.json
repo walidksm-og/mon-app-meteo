@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mon-portfolio-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "C:\\Users\\LENOVO\\mon-portfolio"],
+      "port": 5174,
+      "autoPort": true
+    }
+  ]
+}
